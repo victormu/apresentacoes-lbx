@@ -34,13 +34,15 @@ const T = {
   font: 'var(--font-inter), system-ui, -apple-system, sans-serif',
 }
 
-function renderSlide(slide: Slide) {
+const STEP_SLIDE_TYPES = ['flow', 'plan-flow']
+
+function renderSlide(slide: Slide, activeStep?: number) {
   switch (slide.type) {
     case 'cover':         return <CoverSlide slide={slide} />
     case 'intro':         return <IntroSlide slide={slide} />
     case 'image-list':    return <ImageListSlide slide={slide} />
     case 'five-roles':    return <FiveRolesSlide slide={slide} />
-    case 'flow':          return <FlowSlide slide={slide} />
+    case 'flow':          return <FlowSlide slide={slide} activeStep={activeStep} />
     case 'misalignment':  return <MisalignmentSlide slide={slide} />
     case 'crisis-action': return <CrisisActionSlide slide={slide} />
     case 'data-grid':     return <DataGridSlide slide={slide} />
@@ -49,7 +51,7 @@ function renderSlide(slide: Slide) {
     case 'venn':          return <VennSlide slide={slide} />
     case 'channels':      return <ChannelsSlide slide={slide} />
     case 'calendar':      return <CalendarSlide slide={slide} />
-    case 'plan-flow':     return <PlanFlowSlide slide={slide} />
+    case 'plan-flow':     return <PlanFlowSlide slide={slide} activeStep={activeStep} />
     case 'metrics':       return <MetricsSlide slide={slide} />
     case 'transform':     return <TransformSlide slide={slide} />
     case 'case-study':    return <CaseStudySlide slide={slide} />
@@ -63,16 +65,34 @@ function renderSlide(slide: Slide) {
 export default function Presentation() {
   const [current, setCurrent] = useState(0)
   const [animKey, setAnimKey] = useState(0)
+  const [stepIndex, setStepIndex] = useState(0)
   const total = SLIDES.length
 
   const goTo = useCallback((index: number) => {
     if (index < 0 || index >= total) return
     setCurrent(index)
     setAnimKey(k => k + 1)
+    setStepIndex(0)
   }, [total])
 
-  const prev = useCallback(() => goTo(current - 1), [current, goTo])
-  const next = useCallback(() => goTo(current + 1), [current, goTo])
+  const prev = useCallback(() => {
+    const slide = SLIDES[current]
+    if (STEP_SLIDE_TYPES.includes(slide.type) && stepIndex > 0) {
+      setStepIndex(s => s - 1)
+    } else {
+      goTo(current - 1)
+    }
+  }, [current, stepIndex, goTo])
+
+  const next = useCallback(() => {
+    const slide = SLIDES[current]
+    const totalSteps = slide.steps?.length ?? 0
+    if (STEP_SLIDE_TYPES.includes(slide.type) && stepIndex < totalSteps - 1) {
+      setStepIndex(s => s + 1)
+    } else {
+      goTo(current + 1)
+    }
+  }, [current, stepIndex, goTo])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -86,6 +106,8 @@ export default function Presentation() {
   }, [next, prev, goTo, total])
 
   const slide = SLIDES[current]
+  const isStepSlide = STEP_SLIDE_TYPES.includes(slide.type)
+  const activeStep = isStepSlide ? stepIndex : undefined
   const progress = ((current + 1) / total) * 100
 
   return (
@@ -98,7 +120,7 @@ export default function Presentation() {
       {/* Slide stage */}
       <main style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
         <div key={animKey} className="slide-enter" style={{ position: 'absolute', inset: 0 }}>
-          {renderSlide(slide)}
+          {renderSlide(slide, activeStep)}
         </div>
       </main>
 

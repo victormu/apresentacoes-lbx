@@ -10,6 +10,21 @@ const BASE_URL = 'http://localhost:3000'
 const OUT = resolve(__dirname, '../presentation-lbx.pdf')
 const TMP = resolve(__dirname, '../.pdf-tmp')
 
+async function waitForImages(page) {
+  await page.evaluate(() =>
+    Promise.all(
+      Array.from(document.querySelectorAll('img')).map(img => {
+        if (img.complete && img.naturalHeight !== 0) return Promise.resolve()
+        return new Promise(resolve => {
+          img.addEventListener('load', resolve, { once: true })
+          img.addEventListener('error', resolve, { once: true })
+          setTimeout(resolve, 4000)
+        })
+      })
+    )
+  )
+}
+
 async function exportPdf() {
   if (existsSync(TMP)) rmSync(TMP, { recursive: true })
   mkdirSync(TMP)
@@ -21,17 +36,18 @@ async function exportPdf() {
   })
 
   const page = await browser.newPage()
-  // 1920×1080 px — matches 16:9 slide ratio
   await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 })
 
   console.log(`📄 Capturando ${TOTAL_SLIDES} slides...`)
-  await page.goto(BASE_URL, { waitUntil: 'networkidle2' })
-  await new Promise(r => setTimeout(r, 1500))
+  await page.goto(BASE_URL, { waitUntil: 'networkidle0' })
+  await waitForImages(page)
+  await new Promise(r => setTimeout(r, 800))
 
   const shotPaths = []
 
   for (let i = 0; i < TOTAL_SLIDES; i++) {
-    await new Promise(r => setTimeout(r, 700))
+    await waitForImages(page)
+    await new Promise(r => setTimeout(r, 500))
 
     const shotPath = resolve(TMP, `slide-${String(i).padStart(2, '0')}.jpg`)
     await page.screenshot({ type: 'jpeg', quality: 92, path: shotPath })
@@ -45,14 +61,11 @@ async function exportPdf() {
 
   await browser.close()
 
-  // Build PDF with pdf-lib from JPEG screenshots
   console.log('\n🖨  Montando PDF com pdf-lib...')
   const pdfDoc = await PDFDocument.create()
 
-  // A4 landscape in points (1pt = 1/72 inch)
-  // 16:9 at A4 width: 841.89 × 473.56 pt
-  const W = 841.89
-  const H = W * (9 / 16)
+  const W = 1920
+  const H = 1080
 
   for (let i = 0; i < shotPaths.length; i++) {
     const jpegBytes = readFileSync(shotPaths[i])
@@ -66,7 +79,6 @@ async function exportPdf() {
   const pdfBytes = await pdfDoc.save()
   writeFileSync(OUT, pdfBytes)
 
-  // Cleanup
   rmSync(TMP, { recursive: true })
 
   const mb = (pdfBytes.byteLength / 1024 / 1024).toFixed(1)

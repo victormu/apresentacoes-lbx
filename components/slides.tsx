@@ -1,5 +1,6 @@
 'use client'
 
+import { motion } from 'framer-motion'
 import Image from 'next/image'
 import type { Slide } from '@/lib/slides'
 
@@ -97,6 +98,11 @@ export function ImageListSlide({ slide }: { slide: Slide }) {
       <div style={{ flex: '0 0 44%', position: 'relative', overflow: 'hidden' }}>
         {slide.image && <Image src={slide.image} alt="" fill style={{ objectFit: 'cover', opacity: 0.55 }} />}
         <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, transparent 40%, rgba(15,15,13,1) 100%)' }} />
+        <div style={{ position: 'absolute', bottom: 28, left: 0, right: '8%', display: 'flex', justifyContent: 'center' }}>
+          <span style={{ fontFamily: T.font, fontSize: 10, fontWeight: 700, letterSpacing: '3px', textTransform: 'uppercase' as const, color: 'rgba(247,247,244,0.70)', background: 'rgba(15,15,13,0.55)', padding: '6px 16px', borderRadius: 4, backdropFilter: 'blur(6px)' }}>
+            Assessor de Comunicação
+          </span>
+        </div>
       </div>
       <div style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '60px 72px 60px 56px' }}>
         {slide.label && <Label>{slide.label}</Label>}
@@ -133,9 +139,12 @@ export function FiveRolesSlide({ slide }: { slide: Slide }) {
     <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 8%', height: '100%', gap: 32 }}>
       <div>
         {slide.label && <Label>{slide.label}</Label>}
-        <h2 style={{ fontFamily: T.font, fontSize: 'clamp(20px,2.8vw,40px)', fontWeight: 400, letterSpacing: '-0.75px', color: T.text }}>
+        <h2 style={{ fontFamily: T.font, fontSize: 'clamp(20px,2.8vw,40px)', fontWeight: 400, letterSpacing: '-0.75px', color: T.text, marginBottom: 8 }}>
           {slide.title}
         </h2>
+        <p style={{ fontFamily: T.font, fontSize: 16, color: T.body }}>
+          O assessor precisa atuar em cinco frentes:
+        </p>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: 14 }}>
         {slide.roles?.map((role, i) => (
@@ -160,8 +169,9 @@ export function FiveRolesSlide({ slide }: { slide: Slide }) {
   )
 }
 
-export function FlowSlide({ slide }: { slide: Slide }) {
+export function FlowSlide({ slide, activeStep }: { slide: Slide; activeStep?: number }) {
   const count = slide.steps?.length ?? 0
+  const controlled = activeStep !== undefined
   return (
     <div style={{ position: 'relative', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '48px 7%', gap: 40, overflow: 'hidden' }}>
       {slide.image && (
@@ -178,21 +188,36 @@ export function FlowSlide({ slide }: { slide: Slide }) {
       </div>
       <div style={{ position: 'relative', zIndex: 1, display: 'grid', gridTemplateColumns: `repeat(${count}, 1fr)`, gap: 0, alignItems: 'start' }}>
         {slide.steps?.map((step, i) => {
-          const isFirst = i === 0
+          const isActive = !controlled || i === activeStep
+          const isPast  = controlled && i < (activeStep ?? 0)
+          const isHidden = controlled && i > (activeStep ?? 0)
           const isLast = i === count - 1
           return (
-            <div key={i} style={{ display: 'flex', alignItems: 'flex-start', minWidth: 0 }}>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, y: 12 }}
+              animate={{ opacity: isHidden ? 0 : isPast ? 0.35 : 1, y: isHidden ? 12 : 0 }}
+              transition={{ duration: 0.4, ease: 'easeOut' }}
+              style={{ display: 'flex', alignItems: 'flex-start', minWidth: 0 }}
+            >
               <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 10, textAlign: 'center' as const, padding: '0 4px' }}>
-                <div style={{ width: 44, height: 44, borderRadius: '50%', background: isFirst ? T.accent : T.surface, border: `1px solid ${isFirst ? T.accent : T.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, boxShadow: isFirst ? `0 0 20px rgba(61,127,255,0.35)` : 'none' }}>
-                  <span style={{ fontFamily: T.font, fontSize: 12, fontWeight: 700, color: isFirst ? '#fff' : T.muted }}>
+                <div style={{
+                  width: 44, height: 44, borderRadius: '50%',
+                  background: isActive ? T.accent : T.surface,
+                  border: `1px solid ${isActive ? T.accent : T.line}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                  boxShadow: isActive ? `0 0 22px rgba(61,127,255,0.45)` : 'none',
+                  transition: 'all 0.3s ease',
+                }}>
+                  <span style={{ fontFamily: T.font, fontSize: 12, fontWeight: 700, color: isActive ? '#fff' : T.muted }}>
                     {String(i + 1).padStart(2, '0')}
                   </span>
                 </div>
-                <div style={{ fontFamily: T.font, fontSize: 'clamp(12px,1.1vw,15px)', fontWeight: isFirst ? 600 : 400, color: isFirst ? T.accent : T.text, lineHeight: 1.35 }}>
+                <div style={{ fontFamily: T.font, fontSize: 'clamp(12px,1.1vw,15px)', fontWeight: isActive ? 600 : 400, color: isActive ? T.accent : T.muted, lineHeight: 1.35, transition: 'color 0.3s ease' }}>
                   {step}
                 </div>
                 {slide.description?.[i] && (
-                  <div style={{ fontFamily: T.font, fontSize: 'clamp(10px,0.9vw,12px)', color: T.muted, lineHeight: 1.4 }}>
+                  <div style={{ fontFamily: T.font, fontSize: 'clamp(10px,0.9vw,12px)', color: isPast ? 'rgba(247,247,244,0.25)' : T.muted, lineHeight: 1.4 }}>
                     {slide.description[i]}
                   </div>
                 )}
@@ -204,7 +229,7 @@ export function FlowSlide({ slide }: { slide: Slide }) {
                   </svg>
                 </div>
               )}
-            </div>
+            </motion.div>
           )
         })}
       </div>
@@ -364,10 +389,15 @@ export function ResearchSlide({ slide }: { slide: Slide }) {
       </div>
       <VRule />
       <div style={{ flex: '0 0 42%' }}>
-        <div style={{ background: T.goldDim, border: `1px solid rgba(192,133,50,0.22)`, borderRadius: 12, padding: '36px 30px' }}>
-          <p style={{ fontFamily: T.font, fontSize: 'clamp(16px,2vw,24px)', fontWeight: 300, fontStyle: 'italic', color: T.gold, lineHeight: 1.65 }}>
-            {slide.quote}
-          </p>
+        <div style={{ background: T.goldDim, border: `1px solid rgba(192,133,50,0.22)`, borderRadius: 12, padding: '36px 30px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          {slide.quote?.split('. ').map((line, i, arr) => {
+            const text = (line.endsWith('.') ? line : line + '.').toUpperCase()
+            return (
+              <p key={i} style={{ fontFamily: T.font, fontSize: 'clamp(14px,1.6vw,20px)', fontWeight: i === arr.length - 1 ? 700 : 400, color: T.gold, lineHeight: 1.45, letterSpacing: '0.5px', margin: 0 }}>
+                {text}
+              </p>
+            )
+          })}
         </div>
       </div>
     </div>
@@ -376,25 +406,26 @@ export function ResearchSlide({ slide }: { slide: Slide }) {
 
 export function VennSlide({ slide }: { slide: Slide }) {
   const [c0, c1, c2] = slide.circles ?? ['', '', '']
-  // SVG viewBox 600×500. Three circles in triangle formation.
-  // cx/cy for centers, r = radius
-  const r = 150
-  const cx = [180, 420, 300] // left, right, top
-  const cy = [310, 310, 150]
+  const r = 175
+  const cx = [172, 428, 300]
+  const cy = [340, 340, 152]
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '40px 8%', gap: 16 }}>
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', alignItems: 'center', height: '100%', padding: '32px 6%', gap: 12 }}>
       {slide.label && <Label>{slide.label}</Label>}
       <h2 style={{ fontFamily: T.font, fontSize: 'clamp(20px,2.6vw,38px)', fontWeight: 400, letterSpacing: '-0.75px', color: T.text, textAlign: 'center' as const }}>
         {slide.title}
       </h2>
 
-      {/* Venn SVG + floating labels */}
-      <div style={{ position: 'relative', width: '100%', maxWidth: 700, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-        <svg viewBox="0 0 600 500" style={{ width: '100%', maxHeight: 360, overflow: 'visible' }}>
+      <div style={{ position: 'relative', width: '100%', maxWidth: 780, flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <svg viewBox="0 0 600 530" style={{ width: '100%', maxHeight: 430, overflow: 'visible' }}>
           <defs>
             <filter id="glow">
-              <feGaussianBlur stdDeviation="6" result="blur" />
+              <feGaussianBlur stdDeviation="8" result="blur" />
+              <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
+            </filter>
+            <filter id="glowStrong">
+              <feGaussianBlur stdDeviation="14" result="blur" />
               <feMerge><feMergeNode in="blur" /><feMergeNode in="SourceGraphic" /></feMerge>
             </filter>
           </defs>
@@ -402,76 +433,60 @@ export function VennSlide({ slide }: { slide: Slide }) {
           {/* Three circles */}
           {[0, 1, 2].map(i => (
             <circle key={i} cx={cx[i]} cy={cy[i]} r={r}
-              fill={`rgba(61,127,255,0.08)`}
-              stroke="rgba(61,127,255,0.35)"
+              fill="rgba(61,127,255,0.07)"
+              stroke="rgba(61,127,255,0.40)"
               strokeWidth="1.5"
             />
           ))}
 
-          {/* Center intersection highlight */}
-          <circle cx={300} cy={268} r={42}
-            fill="rgba(61,127,255,0.18)"
-            stroke="rgba(61,127,255,0.5)"
-            strokeWidth="1"
+          {/* Intersection glow — larger and brighter */}
+          <circle cx={300} cy={293} r={82}
+            fill="rgba(61,127,255,0.32)"
+            stroke="rgba(61,127,255,0.85)"
+            strokeWidth="2.5"
+            filter="url(#glowStrong)"
           />
 
-          {/* Circle labels — inside each circle, away from intersection zone */}
-          {/* c0: Necessidade da população — left circle, far-left quadrant */}
-          {c0.split(' ').map((word, wi, arr) => {
-            const mid = Math.ceil(arr.length / 2)
-            const line1 = arr.slice(0, mid).join(' ')
-            const line2 = arr.slice(mid).join(' ')
-            if (wi !== 0) return null
+          {/* c0: left circle label */}
+          {(() => {
+            const words = c0.split(' ')
+            const mid = Math.ceil(words.length / 2)
             return (
-              <g key="c0">
-                <text x={90} y={cy[0] + 6} textAnchor="middle"
-                  fontFamily="Inter, system-ui, sans-serif" fontSize="14" fontWeight="400"
-                  fill="rgba(247,247,244,0.80)">{line1}</text>
-                {line2 && (
-                  <text x={90} y={cy[0] + 24} textAnchor="middle"
-                    fontFamily="Inter, system-ui, sans-serif" fontSize="14" fontWeight="400"
-                    fill="rgba(247,247,244,0.80)">{line2}</text>
-                )}
+              <g>
+                <text x={72} y={cy[0] + 2} textAnchor="middle" fontFamily="Inter, system-ui, sans-serif" fontSize="17" fontWeight="600" fill="rgba(247,247,244,0.90)">{words.slice(0, mid).join(' ')}</text>
+                <text x={72} y={cy[0] + 24} textAnchor="middle" fontFamily="Inter, system-ui, sans-serif" fontSize="17" fontWeight="600" fill="rgba(247,247,244,0.90)">{words.slice(mid).join(' ')}</text>
               </g>
             )
-          })}
-          {/* c1: Prioridade da gestão — top circle, upper quadrant (y ~ 70-90) */}
+          })()}
+          {/* c1: top circle label */}
           {(() => {
             const words = c1.split(' ')
             const mid = Math.ceil(words.length / 2)
             return (
               <g>
-                <text x={300} y={72} textAnchor="middle"
-                  fontFamily="Inter, system-ui, sans-serif" fontSize="14" fontWeight="400"
-                  fill="rgba(247,247,244,0.80)">{words.slice(0, mid).join(' ')}</text>
-                <text x={300} y={90} textAnchor="middle"
-                  fontFamily="Inter, system-ui, sans-serif" fontSize="14" fontWeight="400"
-                  fill="rgba(247,247,244,0.80)">{words.slice(mid).join(' ')}</text>
+                <text x={300} y={62} textAnchor="middle" fontFamily="Inter, system-ui, sans-serif" fontSize="17" fontWeight="600" fill="rgba(247,247,244,0.90)">{words.slice(0, mid).join(' ')}</text>
+                <text x={300} y={84} textAnchor="middle" fontFamily="Inter, system-ui, sans-serif" fontSize="17" fontWeight="600" fill="rgba(247,247,244,0.90)">{words.slice(mid).join(' ')}</text>
               </g>
             )
           })()}
-          {/* c2: Capacidade de entrega — right circle, far-right quadrant */}
+          {/* c2: right circle label */}
           {(() => {
             const words = c2.split(' ')
             const mid = Math.ceil(words.length / 2)
             return (
               <g>
-                <text x={510} y={cy[1] + 6} textAnchor="middle"
-                  fontFamily="Inter, system-ui, sans-serif" fontSize="14" fontWeight="400"
-                  fill="rgba(247,247,244,0.80)">{words.slice(0, mid).join(' ')}</text>
-                <text x={510} y={cy[1] + 24} textAnchor="middle"
-                  fontFamily="Inter, system-ui, sans-serif" fontSize="14" fontWeight="400"
-                  fill="rgba(247,247,244,0.80)">{words.slice(mid).join(' ')}</text>
+                <text x={528} y={cy[1] + 2} textAnchor="middle" fontFamily="Inter, system-ui, sans-serif" fontSize="17" fontWeight="600" fill="rgba(247,247,244,0.90)">{words.slice(0, mid).join(' ')}</text>
+                <text x={528} y={cy[1] + 24} textAnchor="middle" fontFamily="Inter, system-ui, sans-serif" fontSize="17" fontWeight="600" fill="rgba(247,247,244,0.90)">{words.slice(mid).join(' ')}</text>
               </g>
             )
           })()}
 
           {/* Center label pill */}
-          <rect x="168" y="252" width="264" height="34" rx="17"
-            fill="#3D7FFF" filter="url(#glow)" opacity="0.95" />
-          <text x="300" y="274" textAnchor="middle"
-            fontFamily="Inter, system-ui, sans-serif" fontSize="14" fontWeight="600"
-            fill="#ffffff" letterSpacing="0.5">{slide.intersection}</text>
+          <rect x="138" y="272" width="324" height="42" rx="21"
+            fill="#3D7FFF" filter="url(#glow)" opacity="0.97" />
+          <text x="300" y="298" textAnchor="middle"
+            fontFamily="Inter, system-ui, sans-serif" fontSize="17" fontWeight="700"
+            fill="#ffffff" letterSpacing="1">{slide.intersection}</text>
         </svg>
       </div>
     </div>
@@ -504,8 +519,11 @@ export function ChannelsSlide({ slide }: { slide: Slide }) {
         ))}
       </div>
       {slide.message && (
-        <div style={{ background: T.surface, border: `1px solid ${T.line}`, borderRadius: 8, padding: '14px 22px', fontFamily: T.font, fontSize: 17, color: T.text }}>
-          {slide.message}
+        <div style={{ background: T.accentDim, border: `1px solid rgba(61,127,255,0.30)`, borderRadius: 10, padding: '20px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ width: 4, height: 42, background: T.accent, borderRadius: 2, flexShrink: 0 }} />
+          <p style={{ fontFamily: T.font, fontSize: 'clamp(20px,2vw,28px)', fontWeight: 600, color: T.text, margin: 0, letterSpacing: '-0.25px' }}>
+            {slide.message}
+          </p>
         </div>
       )}
     </div>
@@ -538,13 +556,20 @@ export function CalendarSlide({ slide }: { slide: Slide }) {
         <div style={{ borderTop: `1px solid ${T.line}` }} />
       </div>
       {slide.message && (
-        <p style={{ fontFamily: T.font, fontSize: 19, fontWeight: 300, color: T.text }}>{slide.message}</p>
+        <div style={{ background: T.accentDim, border: `1px solid rgba(61,127,255,0.30)`, borderRadius: 10, padding: '20px 32px', display: 'flex', alignItems: 'center', gap: 16 }}>
+          <div style={{ width: 4, height: 42, background: T.accent, borderRadius: 2, flexShrink: 0 }} />
+          <p style={{ fontFamily: T.font, fontSize: 'clamp(20px,2vw,28px)', fontWeight: 600, color: T.text, margin: 0, letterSpacing: '-0.25px' }}>
+            {slide.message}
+          </p>
+        </div>
       )}
     </div>
   )
 }
 
-export function PlanFlowSlide({ slide }: { slide: Slide }) {
+export function PlanFlowSlide({ slide, activeStep }: { slide: Slide; activeStep?: number }) {
+  const count = slide.steps?.length ?? 0
+  const controlled = activeStep !== undefined
   return (
     <div style={{ display: 'flex', width: '100%', height: '100%', padding: '60px 8%', gap: 80, alignItems: 'center' }}>
       <div style={{ flex: '0 0 38%' }}>
@@ -556,21 +581,37 @@ export function PlanFlowSlide({ slide }: { slide: Slide }) {
       </div>
       <div style={{ flex: 1 }}>
         {slide.steps?.map((step, i) => {
-          const isLast = i === (slide.steps?.length ?? 0) - 1
+          const isActive = !controlled || i === activeStep
+          const isPast  = controlled && i < (activeStep ?? 0)
+          const isHidden = controlled && i > (activeStep ?? 0)
+          const isLast = i === count - 1
           return (
-            <div key={i} style={{ display: 'flex', alignItems: 'stretch', gap: 0 }}>
+            <motion.div
+              key={i}
+              initial={{ opacity: 0, x: -16 }}
+              animate={{ opacity: isHidden ? 0 : isPast ? 0.35 : 1, x: isHidden ? -16 : 0 }}
+              transition={{ duration: 0.35, ease: 'easeOut' }}
+              style={{ display: 'flex', alignItems: 'stretch', gap: 0 }}
+            >
               <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', marginRight: 18 }}>
-                <div style={{ width: 36, height: 36, borderRadius: '50%', flexShrink: 0, background: i === 0 ? T.accent : T.surface, border: `1px solid ${i === 0 ? T.accent : T.line}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <span style={{ fontFamily: T.font, fontSize: 13, fontWeight: 600, color: i === 0 ? '#fff' : T.muted }}>{i + 1}</span>
+                <div style={{
+                  width: 36, height: 36, borderRadius: '50%', flexShrink: 0,
+                  background: isActive ? T.accent : T.surface,
+                  border: `1px solid ${isActive ? T.accent : T.line}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  boxShadow: isActive ? `0 0 18px rgba(61,127,255,0.40)` : 'none',
+                  transition: 'all 0.3s ease',
+                }}>
+                  <span style={{ fontFamily: T.font, fontSize: 13, fontWeight: 600, color: isActive ? '#fff' : T.muted }}>{i + 1}</span>
                 </div>
                 {!isLast && <div style={{ width: 1, flex: 1, background: T.line, minHeight: 18 }} />}
               </div>
               <div style={{ paddingBottom: isLast ? 0 : 22, paddingTop: 6 }}>
-                <span style={{ fontFamily: T.font, fontSize: 22, fontWeight: i === 0 ? 500 : 400, color: i === 0 ? T.accent : T.text, letterSpacing: '-0.25px' }}>
+                <span style={{ fontFamily: T.font, fontSize: 22, fontWeight: isActive ? 600 : 400, color: isActive ? T.accent : T.muted, letterSpacing: '-0.25px', transition: 'color 0.3s ease' }}>
                   {step}
                 </span>
               </div>
-            </div>
+            </motion.div>
           )
         })}
       </div>
@@ -632,22 +673,26 @@ export function CaseStudySlide({ slide }: { slide: Slide }) {
     { title: slide.solution ? 'Solução' : 'Ação', items: slide.solution ? [slide.solution, ...(slide.action ?? [])] : (slide.action ?? []), color: T.accent, dim: T.accentDim },
     { title: 'Resultado', items: slide.result ? [slide.result] : [], color: T.gold, dim: T.goldDim },
   ]
-  return (
-    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '44px 8%', height: '100%', gap: 28 }}>
+
+  const hasMultipleImages = (slide.images?.length ?? 0) > 0
+  const hasSingleImage = !!slide.image && !hasMultipleImages
+
+  const content = (
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: '100%', gap: 22 }}>
       <div>
         {slide.label && <Label>{slide.label}</Label>}
-        <h2 style={{ fontFamily: T.font, fontSize: 'clamp(28px,3.5vw,52px)', fontWeight: 400, letterSpacing: '-1px', color: T.text }}>
+        <h2 style={{ fontFamily: T.font, fontSize: 'clamp(22px,2.8vw,44px)', fontWeight: 400, letterSpacing: '-1px', color: T.text }}>
           {slide.title}
         </h2>
       </div>
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 18 }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: 14 }}>
         {cols.map((col, i) => (
-          <div key={i} style={{ background: col.dim, border: `1px solid ${col.color}40`, borderTop: `2px solid ${col.color}`, borderRadius: 8, padding: '22px 22px' }}>
-            <h3 style={{ fontFamily: T.font, fontSize: 11, fontWeight: 600, color: col.color, letterSpacing: '2px', textTransform: 'uppercase' as const, marginBottom: 14 }}>
+          <div key={i} style={{ background: col.dim, border: `1px solid ${col.color}40`, borderTop: `2px solid ${col.color}`, borderRadius: 8, padding: '18px 18px' }}>
+            <h3 style={{ fontFamily: T.font, fontSize: 10, fontWeight: 700, color: col.color, letterSpacing: '2px', textTransform: 'uppercase' as const, marginBottom: 12 }}>
               {col.title}
             </h3>
             {col.items.map((item, j) => (
-              <p key={j} style={{ fontFamily: T.font, fontSize: 15, color: T.text, marginBottom: 8, lineHeight: 1.5 }}>
+              <p key={j} style={{ fontFamily: T.font, fontSize: 14, color: T.text, marginBottom: 7, lineHeight: 1.5 }}>
                 {item}
               </p>
             ))}
@@ -655,6 +700,46 @@ export function CaseStudySlide({ slide }: { slide: Slide }) {
         ))}
       </div>
       {slide.quote && <QuoteBlock text={slide.quote} />}
+    </div>
+  )
+
+  if (hasMultipleImages) {
+    return (
+      <div style={{ display: 'flex', width: '100%', height: '100%' }}>
+        {/* Left: stacked photo strip */}
+        <div style={{ flex: '0 0 36%', display: 'flex', flexDirection: 'column', gap: 3, overflow: 'hidden' }}>
+          {slide.images!.map((src, i) => (
+            <div key={i} style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+              <Image src={src} alt="" fill style={{ objectFit: 'cover' }} />
+              <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(90deg, rgba(15,15,13,0) 60%, rgba(15,15,13,1) 100%)' }} />
+            </div>
+          ))}
+        </div>
+        {/* Right: case content */}
+        <div style={{ flex: 1, padding: '44px 7% 44px 48px', overflow: 'hidden' }}>
+          {content}
+        </div>
+      </div>
+    )
+  }
+
+  if (hasSingleImage) {
+    return (
+      <div style={{ position: 'relative', width: '100%', height: '100%', overflow: 'hidden' }}>
+        {/* Full-bleed background */}
+        <Image src={slide.image!} alt="" fill style={{ objectFit: 'cover', opacity: 0.18 }} />
+        <div style={{ position: 'absolute', inset: 0, background: 'linear-gradient(135deg, rgba(15,15,13,0.80) 0%, rgba(15,15,13,0.60) 100%)' }} />
+        {/* Content on top */}
+        <div style={{ position: 'relative', zIndex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '44px 8%', height: '100%', gap: 28 }}>
+          {content}
+        </div>
+      </div>
+    )
+  }
+
+  return (
+    <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', padding: '44px 8%', height: '100%', gap: 28 }}>
+      {content}
     </div>
   )
 }

@@ -36,6 +36,7 @@ export interface Slide {
   indicators?: string[]
   discoveries?: string[]
   circles?: string[]
+  images?: string[]
   external?: string[]
   internal?: string[]
   description?: string[]
@@ -236,6 +237,7 @@ export const SLIDES: Slide[] = [
     type: 'case-study',
     label: 'CASO 01',
     title: 'Alimenta Marechal',
+    images: ['/images/marechal-1.jpg', '/images/marechal-2.jpg', '/images/marechal-3.jpg'],
     problem: ['Gestão reconhecida por obras', 'Baixa percepção na área social'],
     action: ['Pesquisa', 'Benchmark', 'Construção de solução'],
     result: 'Programa criado e incorporado pela gestão.',
@@ -246,6 +248,7 @@ export const SLIDES: Slide[] = [
     type: 'case-study',
     label: 'CASO 02',
     title: 'Circuito da Gestante',
+    image: '/images/gestante.png',
     problem: ['Baixa adesão ao pré-natal'],
     solution: 'Gamificação',
     action: ['Orientação', 'Benefício', 'Item do enxoval'],
