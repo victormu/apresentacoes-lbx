@@ -92,12 +92,12 @@ export const SLIDES: Slide[] = [
     image: '/images/system.png',
     steps: ['Prefeito', 'Secretaria de Comunicação', 'Secretarias', 'Assessores', 'População', 'Retorno para gestão'],
     description: [
-      'Topo da hierarquia de decisão.',
-      'Organiza e distribui a narrativa.',
-      'Produzem informação especializada.',
-      'Traduzem e entregam à população.',
-      'Recebe e responde.',
-      'A gestão escuta e o ciclo recomeça.',
+      '',
+      'A Secom organiza.',
+      'Cada secretaria produz informação.',
+      '',
+      'A população recebe.',
+      'A gestão escuta. E o ciclo recomeça.',
     ],
   },
   {
