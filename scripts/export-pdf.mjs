@@ -36,10 +36,10 @@ async function exportPdf() {
   })
 
   const page = await browser.newPage()
-  await page.setViewport({ width: 1920, height: 1080, deviceScaleFactor: 1 })
+  await page.setViewport({ width: 1280, height: 720, deviceScaleFactor: 2 })
 
   console.log(`📄 Capturando ${TOTAL_SLIDES} slides...`)
-  await page.goto(BASE_URL, { waitUntil: 'networkidle0' })
+  await page.goto(`${BASE_URL}?pdf=1`, { waitUntil: 'networkidle0' })
   await waitForImages(page)
   await new Promise(r => setTimeout(r, 800))
 
@@ -64,8 +64,8 @@ async function exportPdf() {
   console.log('\n🖨  Montando PDF com pdf-lib...')
   const pdfDoc = await PDFDocument.create()
 
-  const W = 1920
-  const H = 1080
+  const W = 2560
+  const H = 1440
 
   for (let i = 0; i < shotPaths.length; i++) {
     const jpegBytes = readFileSync(shotPaths[i])
