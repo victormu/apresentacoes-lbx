@@ -1,65 +1,147 @@
-import Image from "next/image";
+'use client'
 
-export default function Home() {
+import { useState, useEffect, useCallback } from 'react'
+import { SLIDES } from '@/lib/slides'
+import {
+  CoverSlide,
+  IntroSlide,
+  ImageListSlide,
+  FiveRolesSlide,
+  FlowSlide,
+  MisalignmentSlide,
+  CrisisActionSlide,
+  DataGridSlide,
+  XraySlide,
+  ResearchSlide,
+  VennSlide,
+  ChannelsSlide,
+  CalendarSlide,
+  PlanFlowSlide,
+  MetricsSlide,
+  TransformSlide,
+  CaseStudySlide,
+  ActionCycleSlide,
+  CommandmentsSlide,
+  ConclusionSlide,
+} from '@/components/slides'
+import type { Slide } from '@/lib/slides'
+
+const T = {
+  bg: '#0f0f0d',
+  muted: 'rgba(247,247,244,0.40)',
+  accent: '#3D7FFF',
+  line: 'rgba(247,247,244,0.10)',
+  font: 'var(--font-inter), system-ui, -apple-system, sans-serif',
+}
+
+function renderSlide(slide: Slide) {
+  switch (slide.type) {
+    case 'cover':         return <CoverSlide slide={slide} />
+    case 'intro':         return <IntroSlide slide={slide} />
+    case 'image-list':    return <ImageListSlide slide={slide} />
+    case 'five-roles':    return <FiveRolesSlide slide={slide} />
+    case 'flow':          return <FlowSlide slide={slide} />
+    case 'misalignment':  return <MisalignmentSlide slide={slide} />
+    case 'crisis-action': return <CrisisActionSlide slide={slide} />
+    case 'data-grid':     return <DataGridSlide slide={slide} />
+    case 'xray':          return <XraySlide slide={slide} />
+    case 'research':      return <ResearchSlide slide={slide} />
+    case 'venn':          return <VennSlide slide={slide} />
+    case 'channels':      return <ChannelsSlide slide={slide} />
+    case 'calendar':      return <CalendarSlide slide={slide} />
+    case 'plan-flow':     return <PlanFlowSlide slide={slide} />
+    case 'metrics':       return <MetricsSlide slide={slide} />
+    case 'transform':     return <TransformSlide slide={slide} />
+    case 'case-study':    return <CaseStudySlide slide={slide} />
+    case 'action-cycle':  return <ActionCycleSlide slide={slide} />
+    case 'commandments':  return <CommandmentsSlide slide={slide} />
+    case 'conclusion':    return <ConclusionSlide slide={slide} />
+    default:              return null
+  }
+}
+
+export default function Presentation() {
+  const [current, setCurrent] = useState(0)
+  const [animKey, setAnimKey] = useState(0)
+  const total = SLIDES.length
+
+  const goTo = useCallback((index: number) => {
+    if (index < 0 || index >= total) return
+    setCurrent(index)
+    setAnimKey(k => k + 1)
+  }, [total])
+
+  const prev = useCallback(() => goTo(current - 1), [current, goTo])
+  const next = useCallback(() => goTo(current + 1), [current, goTo])
+
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'ArrowRight' || e.key === ' ') { e.preventDefault(); next() }
+      if (e.key === 'ArrowLeft')                   { e.preventDefault(); prev() }
+      if (e.key === 'Home')                        { e.preventDefault(); goTo(0) }
+      if (e.key === 'End')                         { e.preventDefault(); goTo(total - 1) }
+    }
+    window.addEventListener('keydown', onKey)
+    return () => window.removeEventListener('keydown', onKey)
+  }, [next, prev, goTo, total])
+
+  const slide = SLIDES[current]
+  const progress = ((current + 1) / total) * 100
+
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+    <div style={{ width: '100vw', height: '100vh', background: T.bg, display: 'flex', flexDirection: 'column', overflow: 'hidden', fontFamily: T.font }}>
+      {/* Progress bar */}
+      <div style={{ position: 'fixed', top: 0, left: 0, right: 0, height: 2, background: 'rgba(247,247,244,0.06)', zIndex: 50 }}>
+        <div style={{ height: '100%', width: `${progress}%`, background: T.accent, transition: 'width 0.35s cubic-bezier(0.16,1,0.3,1)' }} />
+      </div>
+
+      {/* Slide stage */}
+      <main style={{ flex: 1, position: 'relative', overflow: 'hidden' }}>
+        <div key={animKey} className="slide-enter" style={{ position: 'absolute', inset: 0 }}>
+          {renderSlide(slide)}
         </div>
       </main>
+
+      {/* Bottom nav */}
+      <nav
+        aria-label="Navegação da apresentação"
+        style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0 32px', height: 52, borderTop: `1px solid ${T.line}`, flexShrink: 0 }}
+      >
+        <button
+          onClick={prev}
+          disabled={current === 0}
+          aria-label="Slide anterior"
+          style={{ background: 'none', border: 'none', color: current === 0 ? T.line : T.muted, cursor: current === 0 ? 'default' : 'pointer', fontSize: 18, padding: '8px 12px', transition: 'color 0.2s', lineHeight: 1 }}
+        >
+          ←
+        </button>
+
+        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => goTo(i)}
+              aria-label={`Ir para slide ${i + 1}`}
+              aria-current={i === current ? 'true' : undefined}
+              style={{ width: i === current ? 20 : 6, height: 6, borderRadius: 3, background: i === current ? T.accent : T.line, border: 'none', padding: 0, cursor: 'pointer', transition: 'all 0.25s cubic-bezier(0.16,1,0.3,1)' }}
+            />
+          ))}
+        </div>
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontFamily: T.font, fontSize: 11, letterSpacing: '2px', color: T.muted, fontWeight: 600 }}>
+            {String(current + 1).padStart(2, '0')} / {String(total).padStart(2, '0')}
+          </span>
+          <button
+            onClick={next}
+            disabled={current === total - 1}
+            aria-label="Próximo slide"
+            style={{ background: 'none', border: 'none', color: current === total - 1 ? T.line : T.muted, cursor: current === total - 1 ? 'default' : 'pointer', fontSize: 18, padding: '8px 12px', transition: 'color 0.2s', lineHeight: 1 }}
+          >
+            →
+          </button>
+        </div>
+      </nav>
     </div>
-  );
+  )
 }

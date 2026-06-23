@@ -1,0 +1,4 @@
+{
+  "name": "apresentacoes-lbx",
+  "buildCommand": "next build"
+}

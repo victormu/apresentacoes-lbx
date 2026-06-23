@@ -1,26 +1,53 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --bg: #0f0f0d;
+  --surface: rgba(247, 247, 244, 0.05);
+  --surface-mid: rgba(247, 247, 244, 0.08);
+  --text: #f7f7f4;
+  --body: rgba(247, 247, 244, 0.70);
+  --muted: rgba(247, 247, 244, 0.40);
+  --accent: #3D7FFF;
+  --accent-dim: rgba(61, 127, 255, 0.12);
+  --gold: #c08532;
+  --gold-dim: rgba(192, 133, 50, 0.10);
+  --error-color: #cf2d56;
+  --error-dim: rgba(207, 45, 86, 0.08);
+  --hairline: rgba(247, 247, 244, 0.10);
+  --hairline-strong: rgba(247, 247, 244, 0.18);
+  --font: var(--font-inter), system-ui, -apple-system, sans-serif;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+html,
+body {
+  height: 100%;
+  overflow: hidden;
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.slide-enter {
+  animation: slideUp 0.45s cubic-bezier(0.16, 1, 0.3, 1) both;
 }

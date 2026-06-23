@@ -22,7 +22,16 @@
 
 # misc
 .DS_Store
+._*
 *.pem
+
+# pdf export
+presentation-lbx.pdf
+.pdf-tmp/
+
+# local skills
+skills-lock.json
+.agents/
 
 # debug
 npm-debug.log*
